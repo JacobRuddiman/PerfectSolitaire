@@ -2,7 +2,10 @@ class Card:
     def __init__(self, rank, suit, face_up=False):
         self.rank = rank
         self.suit = suit
-        self.face_up = face_up 
+        self.face_up = False
+        self.location = "stock"
+
+     
 
 class tableau:
     def __init__(self):
@@ -47,6 +50,20 @@ class Solitaire:
                 "suit": card.suit,
                 "face_up": card.face_up
             })
+        return cards_info
+    
+    def get_face_up_cards_info(self):
+        cards_info = []
+        for card in self.stock.cards + self.waste.cards + \
+                     self.foundation_hearts.cards + self.foundation_diamonds.cards + \
+                     self.foundation_spades.cards + self.foundation_clubs.cards + \
+                     [card for tableau in self.tableaus for card in tableau.cards]:
+            if card.face_up:
+                cards_info.append({
+                    "rank": card.rank,
+                    "suit": card.suit,
+                    "face_up": card.face_up
+                })
         return cards_info
     
     def get_card_variables(self, card_list):
@@ -94,8 +111,64 @@ class Solitaire:
                 if card.face_up:
                     faceup_cards.append(card)
         return faceup_cards
-
     
+    def get_foundation_from_suit(self, suit):
+        if suit == "clubs":
+            return self.foundation_clubs
+        elif suit == "diamonds":
+            return self.foundation_diamonds
+        elif suit == "spades":
+            return self.foundation_spades
+        else:
+            return self.foundation_hearts
+        
+    def compare_card_ranks(self, rank_1, rank_2):
+        rank_1 = self.convert_to_digit(rank_1)
+        rank_2 = self.convert_to_digit(rank_2)
+        return rank_1 - rank_2
+
+    def convert_to_digit(self, rank):
+        if rank == 'J':
+            return 11
+        if rank == 'Q':
+            return 12
+        if rank == 'K':
+            return 13
+        if rank == 'A':
+            return 1
+        return rank    
+
+    def move_from_waste_to_foundation(self, foundation, make_move):
+        suit = foundation.suit
+        if not self.waste.cards:
+            print("Waste empty")
+            return False
+        card_to_move = self.waste.cards[-1]
+        try:
+            top_foundation_card = foundation.cards[-1].rank
+        except:
+            top_foundation_card = None
+        if card_to_move.suit == foundation.suit and ((not foundation.cards and card_to_move.rank == 'A') or (top_foundation_card and self.compare_card_ranks(foundation.cards[-1].rank, self.waste.cards[-1]) == -1)):
+            foundation.cards.append(card_to_move)
+            #Assign self.foundation to foundation
+            self.waste.cards.remove(card_to_move)
+            return True
+        return False
+    
+    def move_from_stock_to_waste(self):
+        if not self.stock.cards:
+            return False
+        
+        card = self.stock.cards.pop()
+        if not card.face_up:
+            card.face_up = True
+
+        self.waste.cards.append(card)
+        return True
+    
+    def print_cards_in_list(self, cards):
+        for card in cards:
+            print(self.get_card_variables(card))
     
     
 
@@ -105,11 +178,14 @@ def main():
     solitaire = Solitaire()
     #print(solitaire.get_cards_info())
 
-    print("All cards in tableaus:", solitaire.get_tableau_cards())
+    print("All cards in Tableaus:", solitaire.get_tableau_cards())
     print("All cards in Foundations:", solitaire.get_foundation_cards())
     print("All cards in Stock:", solitaire.get_stock_cards())
     print("All cards in Waste:", solitaire.get_waste_cards())
     print("All face up cards:", solitaire.get_faceup_cards())
+    solitaire.move_from_stock_to_waste()
+    solitaire.move_from_waste_to_foundation(solitaire.foundation_spades, True)
+    print("\n Face-up:" + str(solitaire.get_face_up_cards_info()))
 
 
 if __name__ == "__main__":

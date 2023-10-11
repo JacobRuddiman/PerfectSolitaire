@@ -193,6 +193,22 @@ class Solitaire:
     def print_cards_in_list(self, cards):
         for card in cards:
             print(self.get_card_variables(card))
+
+
+    def move_from_tableau_to_foundation(self, foundation, tableau_pile):
+        try:
+            card_to_move = self.tableaus[tableau_pile].cards[-1]
+        except:
+            return False
+        try:
+            top_foundation_card = foundation.cards[-1].rank
+        except:
+            top_foundation_card = None
+        if card_to_move.suit == foundation.suit and ((not foundation.cards and card_to_move.rank == 'A') or (top_foundation_card and self.compare_card_ranks(foundation.cards[-1].rank, self.waste.cards[-1]) == -1)):
+            foundation.cards.append(card_to_move)
+            self.tableaus[tableau].cards.remove(card_to_move)
+            return True
+        return False
     
     
 

@@ -139,7 +139,6 @@ class Solitaire:
         return rank    
 
     def move_from_waste_to_foundation(self, foundation, make_move):
-        suit = foundation.suit
         if not self.waste.cards:
             print("Waste empty")
             return False
@@ -166,6 +165,31 @@ class Solitaire:
         self.waste.cards.append(card)
         return True
     
+    
+    def move_from_waste_to_tableau(self, tableau_pile):
+        if not self.waste.cards:
+            print("Waste empty")
+            return False
+        card_to_move = self.waste.cards[-1]
+        try:
+            top_tableau_card = self.tableaus[tableau_pile].cards[-1]
+        except:
+            top_tableau_card = None
+            self.waste.cards.remove(card_to_move)
+            self.tableaus[tableau_pile].cards.append(card_to_move)
+            return True
+        if ((self.is_red(top_tableau_card.suit) == self.is_red(card_to_move.suit)) and self.compare_card_ranks(top_tableau_card.rank, card_to_move.rank) == 1):
+            self.waste.cards.remove(card_to_move)
+            self.tableaus[tableau_pile].append(card_to_move)
+            return True
+        return False
+
+    def is_red(self, suit):
+        if suit == "clubs" or suit == "spades":
+            return True
+        return False
+
+
     def print_cards_in_list(self, cards):
         for card in cards:
             print(self.get_card_variables(card))
@@ -177,14 +201,17 @@ def main():
     
     solitaire = Solitaire()
     #print(solitaire.get_cards_info())
+    solitaire.move_from_stock_to_waste()
+    solitaire.move_from_waste_to_foundation(solitaire.foundation_spades, True)
+    solitaire.move_from_stock_to_waste()
+    solitaire.move_from_waste_to_tableau(3)
 
     print("All cards in Tableaus:", solitaire.get_tableau_cards())
     print("All cards in Foundations:", solitaire.get_foundation_cards())
     print("All cards in Stock:", solitaire.get_stock_cards())
     print("All cards in Waste:", solitaire.get_waste_cards())
     print("All face up cards:", solitaire.get_faceup_cards())
-    solitaire.move_from_stock_to_waste()
-    solitaire.move_from_waste_to_foundation(solitaire.foundation_spades, True)
+
     print("\n Face-up:" + str(solitaire.get_face_up_cards_info()))
 
 
